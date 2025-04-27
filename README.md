@@ -37,10 +37,10 @@ Darius requires a specific environment to run the best. The fake functions that 
 local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
+    HideBind = Enum.KeyCode.T,
 
     -- Optional
     Icon = "",
-    HideBind = Enum.KeyCode.T,
     Parent = target, -- Defaults to game.CoreGui
     UseConfig = false, -- Determines if Workspace is required+enables filesystem for configurationss
     Workspace = "mainWorkspace", -- the name of the darius workspace for configs and themes
@@ -437,7 +437,15 @@ colorpicker:SetTransparency(0)
 ```
 ## Create a Label
 ```lua
-local label = tab:Label("heyo")
+local label = tab:Label("heyo") 
+-- OR
+local label = tab:Label({
+    Text = "heyo",
+    
+    -- Optional
+    Transparent = true, -- The background of the label. Defaults false
+    Visible = true -- Defaults true
+})
 ```
 ### Returned Functions
 ```lua
@@ -450,6 +458,7 @@ local paragraph = tab:Paragraph({
     Body = "\tBODY\n Body\n body",
 
     -- Optional
+    Transparent = true, -- Defaults false
     Visible = false -- Defaults true
 })
 ```
