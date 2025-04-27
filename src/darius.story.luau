@@ -18,6 +18,7 @@ local fakeData = {
 customFunctions.makefolder("darius")
 --customFunctions.makefolder("darius/testing")
 customFunctions.makefolder("darius/themes")
+customFunctions.makefolder("darius/testing")
 --customFunctions.writefile("darius/testing/FIVE5.json", HttpService:JSONEncode(fakeData))
 
 local randomIcons = {}
@@ -31,6 +32,17 @@ end
 
 local ripFile = [[{"palette":{"disabledText":"d6dce0","text2":"b7a6d4","mobileButtonText":"2c2f33","disabledBackground":"2a2c31","mobileButtonImage":"2c2f33","text":"edebf2","background2":"0f0c15","notificationButton":"222427","orange":"b7a6d4","toggled":"b7a6d4","mobileButtonBackground":"dce1e5","colorpickerBar":"dce1e5","background":"1c1726","selectedTab":"1d1827","red":"b7a6d4"},"uid":"APunF","name":"rip"}]]
 customFunctions.writefile("darius/themes/APunF.json", ripFile)
+local config = [[{
+    "name": "testing",
+    "uid": "WORKS",
+    "fromSet": false,
+    "lock": true,
+    "autoload": true,
+    "flagValues": {
+        "textbox":"AUTOLOAD"
+    }
+}]]
+customFunctions.writefile("darius/testing/WORKS.json", config)
 
 return function(target)
     task.spawn(function()
@@ -179,9 +191,12 @@ return function(target)
                 print(`colorpicker: {c} : {t}`)
             end
         })
-        tab:Label("Label")
+        tab:Label({
+            Text = "Label",
+        })
         tab:Paragraph({
             Title = "Paragraph",
+            Transparent = true,
             Body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
         })
 

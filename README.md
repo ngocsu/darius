@@ -177,10 +177,19 @@ Using a unique identifier you can set the configuration.
 ```lua
 darius:SetConfiguration("Bp5bD")
 ```
+### Setting Configuration To Auto Load
+The configuration that has auto load set to true, there can only be one, will load with priorty over the configuration found in `Configuration`.
+```lua
+darius:AutoLoadConfiguration("Bp5bD")
+```
 ### Getting Configuration Unique Identifier
 Returns current configuration's unique identifier.
 ```lua
 darius:GetConfigurationUID() --> "Bp5bD"
+```
+### Getting All Configurations
+```lua
+darius:GetConfigurations() --> {} Lua table of all loaded configurations.
 ```
 ### Exporting Configuration
 If you want to export the current configuration you can use this.
