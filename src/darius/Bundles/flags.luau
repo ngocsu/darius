@@ -4,7 +4,6 @@ local services = require(script.Parent).services
 local HttpService = services.HttpService
 local fusion = require(script.Parent).Fusion
 local observe = fusion.Observer
-local value = fusion.Value
 
 local utilities = require(script.Parent.Parent.utilities)
 local connections = utilities.connections
@@ -205,10 +204,12 @@ function funcs.find(uid)
     return false
 end
 
-function funcs.create(name, uid, fromFile, tbl, fromSet, lock)
+local hasAutoloaded = false
+function funcs.create(name, uid, fromFile, tbl, fromSet, lock, autoload)
     fromFile = fromFile or false
     fromSet = fromSet or false
     lock = lock or false
+    autoload = autoload or false
     if uid == "original" and fromFile then
         return
     end
@@ -230,6 +231,7 @@ function funcs.create(name, uid, fromFile, tbl, fromSet, lock)
     config.fromSet = fromSet
     config.lock = lock
     config.uid = uid
+    config.autoload = autoload
     config.flagValues = {}
     if tbl ~= nil then
         config.flagValues = tbl
@@ -253,6 +255,13 @@ function funcs.create(name, uid, fromFile, tbl, fromSet, lock)
             task.spawn(v)
         end
     end)
+    if autoload and not hasAutoloaded then
+        hasAutoloaded = true
+        for i,v in config.flagValues do
+            funcs.preregister(i, v)
+        end
+        funcs.set(uid)
+    end
     return uid
 end
 
@@ -260,8 +269,9 @@ function funcs.init()
     if funcs.writeFiles then
         for _,file in customFunctions.listfiles(funcs.path) do
             local config = HttpService:JSONDecode(customFunctions.readfile(file))
-            funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet, config.lock)
+            funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet, config.lock, config.autoload)
         end
+        return hasAutoloaded
     end
 end
 
@@ -308,7 +318,27 @@ function funcs.save(uid)
         customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
     end
 end
+function funcs.edit(uid, property, newValue)
+    local config = funcs.find(uid)
+    if config then
+        config[property] = newValue
+        funcs.save(uid)
+    end
+end
+function funcs.setAutoload(uid, boolean)
+    local config = funcs.find(uid)
+    if not config then
+        return
+    end
 
+    funcs.edit(uid, "autoload", boolean)
+    for _,_config in configs do
+        if _config.uid == uid then
+            continue
+        end
+        funcs.edit(_config.uid, "autoload", false)
+    end
+end
 function funcs.delete(uid)
     local config, index = funcs.find(uid)
     if config then

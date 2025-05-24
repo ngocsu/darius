@@ -142,17 +142,19 @@ function darius:Window(windowProperty)
 
 	-- Configs
 
-	flagCreator.init()
+	local hasAutoload = flagCreator.init()
 	if windowProperty.Configuration then
 		didPass, failedItems = typecheck(windowProperty.Configuration, {
 			Name = "",
 			FlagValues = {}
 		})
 		assert(didPass, table.concat(failedItems, "\n"))
-		local uid = flagCreator.create(windowProperty.Configuration.Name, nil, nil, windowProperty.Configuration.FlagValues, true, windowProperty.Configuration.Lock)
-		flagCreator.set(uid)
-		for i,v in windowProperty.Configuration.FlagValues do
-			flagCreator.preregister(i, v)
+		local uid = flagCreator.create(windowProperty.Configuration.Name, nil, nil, windowProperty.Configuration.FlagValues, true, windowProperty.Configuration.Lock, windowProperty.Configuration.AutoLoad)
+		if not hasAutoload then
+			flagCreator.set(uid)
+			for i,v in windowProperty.Configuration.FlagValues do
+				flagCreator.preregister(i, v)
+			end
 		end
 	end
 
@@ -219,8 +221,12 @@ function darius:Window(windowProperty)
 			property.tab = tab
 			return addComponent("dropdown", tabFrame, property)
 		end
-		function components:Label(string)
-			return addComponent("label", tabFrame, {tab = tab, Text = string})
+		function components:Label(property)
+			if property and typeof(property) == "table" then
+				property.tab = tab
+				return addComponent("label", tabFrame, property)
+			end
+			return addComponent("label", tabFrame, {tab = tab, Text = property})
 		end
 		function components:Paragraph(property)
 			property.tab = tab
@@ -318,6 +324,12 @@ function darius:Window(windowProperty)
 	end
 	function darius:ExportConfiguration()
 		return flagCreator.export()
+	end
+	function darius:GetConfigurations()
+		return flagCreator.getConfigs()
+	end
+	function darius:AutoLoadConfiguration(uid)
+		flagCreator.setAutoload(uid, true)
 	end
 
 	function darius:CreateSettings()
@@ -633,7 +645,8 @@ function darius:Window(windowProperty)
 				})
 			end)
 			local selectedConfig = ""
-			local _save, _delete
+			local isBeingAutoSet = true
+			local _save, _delete,autoload
 
 			local configs = _settings:Dropdown({
 				Name = "Configs",
@@ -648,6 +661,9 @@ function darius:Window(windowProperty)
 						_save:Enable()
 						return
 					end
+					isBeingAutoSet = true
+					autoload:SetValue(config.autoload)
+					isBeingAutoSet = false
 					if config.lock and _delete then
 						_delete:Disable()
 						_save:Disable()
@@ -693,6 +709,11 @@ function darius:Window(windowProperty)
 				if value then
 					configs:SelectItem(value)
 				end
+				if autoload then
+					isBeingAutoSet = true
+					autoload:SetValue(flagCreator.getConfig().autoload)
+					isBeingAutoSet = false
+				end
 			end
 			flagCreator.onCreate(refreshConfigList)
 			flagCreator.onSelect(refreshConfigList)
@@ -706,6 +727,7 @@ function darius:Window(windowProperty)
 				Callback = function()
 					configButtons:Invisible()
 					configs:Invisible()
+					autoload:Invisible()
 					createA:Visible()
 					createB:Visible()
 					createC:Visible()
@@ -730,6 +752,7 @@ function darius:Window(windowProperty)
 
 						configButtons:Visible()
 						configs:Visible()
+						autoload:Visible()
 						createA:Invisible()
 						createB:Invisible()
 						createC:Invisible()
@@ -758,6 +781,7 @@ function darius:Window(windowProperty)
 				Callback = function()
 					configButtons:Visible()
 					configs:Visible()
+					autoload:Visible()
 					createA:Invisible()
 					createB:Invisible()
 					createC:Invisible()
@@ -812,6 +836,21 @@ function darius:Window(windowProperty)
 					refreshConfigList()
 				end
 			})
+
+			-- Autoload
+
+			autoload = _settings:Toggle({
+				Name = "Auto Load Configuration",
+				DisabledText = "Disabled",
+				Default = flagCreator.getConfig().autoload,
+				Callback = function(boolean)
+					if isBeingAutoSet then
+						return
+					end
+					flagCreator.setAutoload(selectedConfig, boolean)
+				end
+			})
+			isBeingAutoSet = false
 		end
 		--[[
 		_settings:Button({

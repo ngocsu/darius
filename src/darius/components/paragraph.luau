@@ -28,9 +28,11 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Title = "",
 		Visible = false,
+		Transparent = false,
 		Body = ""
 	},{
 		property.Visible and "" or "Visible",
+		property.Transparent and "" or "Transparent"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -46,6 +48,7 @@ return function(property)
 	local title = property.Title
 	local body = property.Body
 	local visible = property.Visible or value(true)
+	local transparent = property.Transparent or value(false)
 
 	-- Variables
 
@@ -93,7 +96,7 @@ return function(property)
 		end),
 		BackgroundColor3 = theme.background2,
 		Parent = _parent,
-		BackgroundTransparency = selectedAnimation,
+		BackgroundTransparency = get(transparent) and 1 or selectedAnimation,
 		Size = computed(function()
 			return UDim2.new(1,0,0,36 + get(ySize))
 		end),
